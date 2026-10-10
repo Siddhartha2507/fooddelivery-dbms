@@ -561,7 +561,10 @@ def restaurant_menu_update(item_id):
                     cur.execute("SELECT name FROM restaurant WHERE restaurant_id=%s",(actor_id(),))
                     restaurant_label=cur.fetchone()[0]
                     vector=embedding_vector(f"Food: {name}. Restaurant: {restaurant_label}")
-                    cur.execute("UPDATE menu_item SET item_name=%s,price=%s,availability=%s,embedding=%s::vector WHERE item_id=%s AND restaurant_id=%s",(name,price,available,vector,item_id,actor_id()))
+                    if vector:
+                        cur.execute("UPDATE menu_item SET item_name=%s,price=%s,availability=%s,embedding=%s::vector WHERE item_id=%s AND restaurant_id=%s",(name,price,available,vector,item_id,actor_id()))
+                    else:
+                        cur.execute("UPDATE menu_item SET item_name=%s,price=%s,availability=%s WHERE item_id=%s AND restaurant_id=%s",(name,price,available,item_id,actor_id()))
                 else:
                     cur.execute("UPDATE menu_item SET price=%s,availability=%s WHERE item_id=%s AND restaurant_id=%s",(price,available,item_id,actor_id()))
                 if cur.rowcount!=1: abort(404)

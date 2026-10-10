@@ -518,8 +518,13 @@ def semantic_search_api():
 
     connection = None
     try:
-        embedding = get_embedding_model().encode(query, normalize_embeddings=True).tolist()
-        vector_value = "[" + ",".join(str(float(value)) for value in embedding) + "]"
+        try:
+            embedding = get_embedding_model().encode(query, normalize_embeddings=True).tolist()
+            vector_value = "[" + ",".join(str(float(value)) for value in embedding) + "]"
+        except Exception as error:
+            # Model loading is optional; retain menu search using PostgreSQL text matching.
+            app.logger.info("Semantic model unavailable; using menu name search (%s)", type(error).__name__)
+            vector_value = None
         connection = get_postgres_connection()
         with connection.cursor() as cursor:
             columns = get_menu_schema(cursor)
@@ -540,14 +545,27 @@ def semantic_search_api():
             restaurant_select = f'r.{quote(restaurant_name)}' if join else "NULL::text"
             restaurant_join = f' LEFT JOIN restaurant r ON m.{quote(restaurant_id)} = r.{quote(restaurant_pk)}' if join else ""
             available_select = f'm.{quote(available_col)}' if available_col else "NULL::text"
-            cursor.execute(
-                f"SELECT m.{quote(id_col)}, m.{quote(name_col)}, m.{quote(price_col)}, "
-                f"{available_select}, {restaurant_select}, "
-                f"1 - (m.embedding <=> %s::vector) AS similarity "
-                f"FROM menu_item m{restaurant_join} WHERE m.embedding IS NOT NULL "
-                f"ORDER BY m.embedding <=> %s::vector LIMIT 5",
-                (vector_value, vector_value),
-            )
+            if vector_value is not None:
+                cursor.execute(
+                    f"SELECT m.{quote(id_col)}, m.{quote(name_col)}, m.{quote(price_col)}, "
+                    f"{available_select}, {restaurant_select}, "
+                    f"1 - (m.embedding <=> %s::vector) AS similarity "
+                    f"FROM menu_item m{restaurant_join} WHERE m.embedding IS NOT NULL "
+                    f"ORDER BY m.embedding <=> %s::vector LIMIT 5",
+                    (vector_value, vector_value),
+                )
+            else:
+                name = f"m.{quote(name_col)}"
+                cursor.execute(
+                    f"SELECT m.{quote(id_col)}, {name}, m.{quote(price_col)}, "
+                    f"{available_select}, {restaurant_select}, "
+                    f"CASE WHEN lower({name}) = lower(%s) THEN 1.0 "
+                    f"WHEN lower({name}) LIKE lower(%s) THEN 0.8 ELSE 0.5 END AS similarity "
+                    f"FROM menu_item m{restaurant_join} WHERE {name} ILIKE %s "
+                    f"ORDER BY CASE WHEN lower({name}) = lower(%s) THEN 0 "
+                    f"WHEN lower({name}) LIKE lower(%s) THEN 1 ELSE 2 END, {name} LIMIT 5",
+                    (query, query + "%", "%" + query + "%", query, query + "%"),
+                )
             results = [
                 {
                     "item_id": row[0],

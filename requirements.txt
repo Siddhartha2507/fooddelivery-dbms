@@ -2,4 +2,3 @@ Flask
 pymongo
 python-dotenv
 psycopg2-binary
-sentence-transformers
