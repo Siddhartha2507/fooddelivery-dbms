@@ -1,0 +1,575 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Your Cart | FoodFlow</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        body {
+            background: #080d18;
+        }
+
+        .foodflow-cart {
+            position: relative;
+            isolation: isolate;
+            width: min(1100px, 92%);
+            margin: 0 auto;
+            padding: 45px 0 85px;
+            color: #f8fafc;
+            animation: cartReveal .75s cubic-bezier(.2,.7,.2,1) both;
+        }
+
+        .foodflow-cart::before {
+            content: "";
+            position: fixed;
+            z-index: -1;
+            width: 430px;
+            height: 430px;
+            top: 15%;
+            right: -180px;
+            border-radius: 50%;
+            background: #2563eb;
+            opacity: .12;
+            filter: blur(100px);
+            pointer-events: none;
+        }
+
+        .cart-heading {
+            margin: 12px 0 10px;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            line-height: 1.05;
+            letter-spacing: -2px;
+            color: #fff;
+        }
+
+        .cart-heading span {
+            background: linear-gradient(100deg, #60a5fa, #22d3ee, #a78bfa);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cartGradient 6s ease infinite;
+        }
+
+        .cart-intro {
+            color: #a5b4c8;
+            margin: 0 0 32px;
+            line-height: 1.7;
+        }
+
+        .cart-panel {
+            padding: clamp(18px, 4vw, 34px);
+            border: 1px solid rgba(148,163,184,.2);
+            border-radius: 25px;
+            background: linear-gradient(
+                145deg,
+                rgba(24,36,58,.88),
+                rgba(12,19,33,.94)
+            );
+            box-shadow: 0 25px 80px rgba(0,0,0,.3);
+            backdrop-filter: blur(18px);
+        }
+
+        .cart-panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .cart-panel-title h2 {
+            margin: 0;
+            color: #f8fafc;
+            font-size: 1.35rem;
+        }
+
+        .cart-count {
+            padding: 7px 12px;
+            border: 1px solid rgba(96,165,250,.28);
+            border-radius: 999px;
+            background: rgba(37,99,235,.13);
+            color: #93c5fd;
+            font-size: .82rem;
+        }
+
+        .cart-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto auto;
+            align-items: center;
+            gap: 22px;
+            padding: 23px 0;
+            border-bottom: 1px solid rgba(148,163,184,.15);
+            animation: cartItemReveal .55s ease both;
+            transition: background .25s ease, padding .25s ease;
+        }
+
+        .cart-row:hover {
+            padding-left: 10px;
+            padding-right: 10px;
+            background: rgba(96,165,250,.035);
+        }
+
+        .cart-row > div:first-child {
+            min-width: 0;
+        }
+
+        .cart-row h3 {
+            color: #f8fafc;
+            margin: 7px 0;
+            font-size: 1.12rem;
+            overflow-wrap: anywhere;
+        }
+
+        .cart-row small {
+            color: #a5b4c8;
+            line-height: 1.6;
+        }
+
+        .foodflow-cart .food-kicker {
+            color: #67e8f9;
+            font-size: .72rem;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 6px;
+            border: 1px solid rgba(148,163,184,.22);
+            border-radius: 14px;
+            background: rgba(15,23,42,.7);
+        }
+
+        .quantity-control span {
+            min-width: 20px;
+            text-align: center;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .quantity-control button {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border: 1px solid rgba(148,163,184,.15);
+            border-radius: 10px;
+            background: rgba(51,65,85,.7);
+            color: #e2e8f0;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: transform .2s ease, background .2s ease;
+        }
+
+        .quantity-control button:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+
+        .quantity-control button:active {
+            transform: scale(.94);
+        }
+
+        .cart-row > strong {
+            min-width: 90px;
+            text-align: right;
+            color: #6ee7b7;
+            font-size: 1.05rem;
+            white-space: nowrap;
+        }
+
+        .foodflow-cart .text-button {
+            border: 0;
+            background: transparent;
+            color: #fca5a5;
+            font: inherit;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: color .2s ease, transform .2s ease;
+        }
+
+        .foodflow-cart .text-button:hover {
+            color: #fecaca;
+            transform: translateY(-2px);
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            margin-top: 28px;
+            padding: 23px;
+            border: 1px solid rgba(52,211,153,.2);
+            border-radius: 18px;
+            background: linear-gradient(
+                110deg,
+                rgba(16,185,129,.09),
+                rgba(15,23,42,.2)
+            );
+        }
+
+        .cart-total span {
+            color: #cbd5e1;
+            font-size: 1.05rem;
+        }
+
+        .cart-total strong {
+            color: #6ee7b7;
+            font-size: clamp(1.6rem, 4vw, 2.1rem);
+            letter-spacing: -.5px;
+        }
+
+        .cart-note {
+            margin: 15px 0 24px;
+            color: #94a3b8;
+            font-size: .88rem;
+            line-height: 1.7;
+        }
+
+        .cart-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .cart-actions-left,
+        .cart-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .foodflow-cart .secondary-link,
+        .foodflow-cart .primary-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 47px;
+            padding: 12px 19px;
+            border-radius: 13px;
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform .25s ease, box-shadow .25s ease,
+                        background .25s ease;
+        }
+
+        .foodflow-cart .secondary-link {
+            border: 1px solid rgba(248,113,113,.3);
+            background: rgba(127,29,29,.12);
+            color: #fca5a5;
+        }
+
+        .foodflow-cart .secondary-link:hover {
+            background: rgba(127,29,29,.25);
+            transform: translateY(-2px);
+        }
+
+        .foodflow-cart .primary-link {
+            border: 1px solid rgba(255,255,255,.18);
+            background: linear-gradient(110deg, #2563eb, #0891b2);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(37,99,235,.24);
+        }
+
+        .foodflow-cart .primary-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 32px rgba(37,99,235,.38);
+        }
+
+        .cart-back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: #93c5fd;
+            text-decoration: none;
+            transition: color .2s ease;
+        }
+
+        .cart-back-link:hover {
+            color: #67e8f9;
+        }
+
+        .cart-empty {
+            padding: 55px 25px;
+            text-align: center;
+            border: 1px solid rgba(148,163,184,.2);
+            border-radius: 25px;
+            background: linear-gradient(
+                145deg,
+                rgba(24,36,58,.88),
+                rgba(12,19,33,.94)
+            );
+            box-shadow: 0 25px 70px rgba(0,0,0,.22);
+        }
+
+        .cart-empty-icon {
+            display: grid;
+            place-items: center;
+            width: 85px;
+            height: 85px;
+            margin: 0 auto 22px;
+            border: 1px solid rgba(96,165,250,.25);
+            border-radius: 26px;
+            background: rgba(37,99,235,.12);
+            font-size: 2.5rem;
+            animation: cartFloat 3s ease-in-out infinite;
+        }
+
+        .cart-empty h2 {
+            margin: 0 0 12px;
+            color: #f8fafc;
+            font-size: 1.8rem;
+        }
+
+        .cart-empty p {
+            margin: 0 0 25px;
+            color: #a5b4c8;
+            line-height: 1.7;
+        }
+
+        @keyframes cartReveal {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cartItemReveal {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cartGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes cartFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @media (max-width: 760px) {
+            .cart-row {
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 14px;
+            }
+
+            .cart-row > div:first-child {
+                grid-column: 1 / -1;
+            }
+
+            .cart-row > strong {
+                min-width: 0;
+                text-align: left;
+            }
+
+            .cart-row .text-button {
+                justify-self: end;
+            }
+
+            .cart-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .cart-actions-left,
+            .cart-actions-right {
+                width: 100%;
+            }
+
+            .cart-actions .primary-link,
+            .cart-actions .secondary-link {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .foodflow-cart {
+                width: 94%;
+                padding-top: 30px;
+            }
+
+            .cart-total {
+                padding: 17px;
+            }
+
+            .quantity-control {
+                gap: 7px;
+            }
+
+            .quantity-control button {
+                width: 31px;
+                height: 31px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .foodflow-cart,
+            .cart-row,
+            .cart-heading span,
+            .cart-empty-icon {
+                animation: none !important;
+            }
+
+            .foodflow-cart *,
+            .foodflow-cart *::before,
+            .foodflow-cart *::after {
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {% include "_app_nav.html" %}
+
+    <main class="customer-main foodflow-cart">
+        {% include "_flashes.html" %}
+
+        <span class="login-eyebrow">YOUR SELECTION</span>
+
+        <h1 class="cart-heading">
+            Your <span>cart.</span>
+        </h1>
+
+        <p class="cart-intro">
+            Your favourites, all in one place. Review your items before checkout.
+        </p>
+
+        {% if items %}
+        <section class="cart-panel">
+
+            <div class="cart-panel-title">
+                <h2>Order summary</h2>
+                <span class="cart-count">
+                    {{ items|length }} item{% if items|length != 1 %}s{% endif %}
+                </span>
+            </div>
+
+            {% for item in items %}
+            <article class="cart-row"
+                     style="animation-delay: {{ loop.index0 * 90 }}ms">
+
+                <div>
+                    <span class="food-kicker">{{ item.restaurant }}</span>
+
+                    <h3>{{ item.name }}</h3>
+
+                    <small>
+                        ₹{{ '%.2f'|format(item.price) }} each
+                        {% if not item.available %}
+                            · unavailable
+                        {% endif %}
+                    </small>
+                </div>
+
+                <div class="quantity-control">
+                    <button
+                        type="button"
+                        data-quantity-item="{{ item.item_id }}"
+                        data-quantity-change="-1"
+                        aria-label="Decrease quantity of {{ item.name }}">
+                        −
+                    </button>
+
+                    <span>{{ item.quantity }}</span>
+
+                    <button
+                        type="button"
+                        data-quantity-item="{{ item.item_id }}"
+                        data-quantity-change="1"
+                        aria-label="Increase quantity of {{ item.name }}">
+                        +
+                    </button>
+                </div>
+
+                <strong>
+                    ₹{{ '%.2f'|format(item.line_total) }}
+                </strong>
+
+                <button
+                    type="button"
+                    class="text-button"
+                    data-remove-item="{{ item.item_id }}">
+                    Remove
+                </button>
+
+            </article>
+            {% endfor %}
+
+            <div class="cart-total">
+                <span>Subtotal</span>
+                <strong>₹{{ '%.2f'|format(total) }}</strong>
+            </div>
+
+            <p class="cart-note">
+                Final prices are recalculated from PostgreSQL at checkout.
+                Unavailable items may not be eligible for ordering.
+            </p>
+
+            <div class="cart-actions">
+                <div class="cart-actions-left">
+                    <button
+                        class="secondary-link"
+                        type="button"
+                        data-clear-cart>
+                        Clear cart
+                    </button>
+                </div>
+
+                <div class="cart-actions-right">
+                    <a class="primary-link" href="/customer/checkout">
+                        Continue to checkout <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <a class="cart-back-link" href="/customer/restaurants">
+                ← Continue exploring restaurants
+            </a>
+
+        </section>
+
+        {% else %}
+        <section class="cart-empty">
+            <div class="cart-empty-icon" aria-hidden="true">🛒</div>
+
+            <h2>Your cart is waiting</h2>
+
+            <p>
+                Looks like you haven't added anything yet.
+                Discover your next favourite meal.
+            </p>
+
+            <a class="primary-link" href="/customer/restaurants">
+                Explore restaurants <span aria-hidden="true">→</span>
+            </a>
+        </section>
+        {% endif %}
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    {% include "_app_footer.html" %}
+
+    <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

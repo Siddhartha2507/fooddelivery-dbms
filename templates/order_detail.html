@@ -1,0 +1,258 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>Order #{{ order[0] }} | FoodFlow</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <style>
+    .tracking-map-panel {
+      margin: 24px 0;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      background: rgba(17,24,39,.88);
+      color: #f8fafc;
+      box-shadow: 0 12px 35px rgba(0,0,0,.18);
+    }
+
+    .tracking-map-panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .tracking-map-description {
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    #foodflow-map {
+      height: 380px;
+      width: 100%;
+      margin-top: 18px;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+
+    .tracking-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 18px;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    .tracking-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .map-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .restaurant-dot { background: #f97316; }
+    .customer-dot { background: #22c55e; }
+    .rider-dot { background: #38bdf8; }
+
+    .simulation-note {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 8px 12px;
+      border: 1px solid rgba(56,189,248,.35);
+      border-radius: 20px;
+      color: #bae6fd;
+      font-size: 12px;
+      letter-spacing: .4px;
+    }
+
+    @media (max-width: 600px) {
+      .tracking-map-panel { padding: 16px; }
+      #foodflow-map { height: 300px; }
+    }
+  </style>
+</head>
+
+<body>
+  {% include "_app_nav.html" %}
+
+  <main class="customer-main">
+    <section class="welcome-card">
+      <span class="login-eyebrow">DELIVERY STATUS TRACKING</span>
+      <h1>Order #{{ order[0] }}</h1>
+      <p>{{ order[4] }} · {{ order[1] }}</p>
+
+      <div class="status-steps">
+        {% for step in ['Placed','Preparing','Ready for Pickup','Out for Delivery','Delivered'] %}
+          <div class="status-step {% if step == order[2] %}current{% endif %}">
+            <span>{{ loop.index }}</span>
+            <b>{{ step }}</b>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p>
+        Payment: <strong>{{ order[5] or 'Pending' }}</strong>
+        · Delivery status: <strong>{{ order[7] or 'Unassigned' }}</strong>
+      </p>
+    </section>
+
+    <section class="tracking-map-panel">
+      <span class="login-eyebrow">FOODFLOW LIVE-STYLE TRACKING</span>
+      <h2>Track your delivery</h2>
+      <p class="tracking-map-description">
+        Follow the rider marker along the demonstration route from the restaurant
+        towards the delivery destination.
+      </p>
+
+      <div id="foodflow-map" aria-label="Simulated food delivery route map"></div>
+
+      <div class="tracking-legend">
+        <span><i class="map-dot restaurant-dot"></i> Restaurant</span>
+        <span><i class="map-dot rider-dot"></i> Delivery rider</span>
+        <span><i class="map-dot customer-dot"></i> Destination</span>
+      </div>
+
+      <span class="simulation-note">
+        DEMO SIMULATION · NOT REAL-TIME GPS
+      </span>
+    </section>
+
+    <section class="cart-panel">
+      <h2>Order items</h2>
+
+      {% for name, qty, price in items %}
+        <div class="checkout-line">
+          <span>{{ qty }} × {{ name }}</span>
+          <strong>₹{{ '%.2f'|format(price * qty) }}</strong>
+        </div>
+      {% endfor %}
+
+      <div class="cart-total">
+        <span>Total</span>
+        <strong>₹{{ '%.2f'|format(order[3]) }}</strong>
+      </div>
+
+      {% if not delivery|default(false) and order[2] == 'Placed' and order[5] == 'Pending' %}
+        <form method="post" action="/customer/orders/{{ order[0] }}/cancel">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="text-button">Cancel order</button>
+        </form>
+      {% endif %}
+    </section>
+  </main>
+
+  {% include "_app_footer.html" %}
+
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    (function () {
+      const mapElement = document.getElementById("foodflow-map");
+      if (!mapElement || typeof L === "undefined") {
+        if (mapElement) {
+          mapElement.innerHTML =
+            '<p style="padding:20px;color:#111827">The map could not load. Check your internet connection and refresh.</p>';
+        }
+        return;
+      }
+
+      // Illustrative Hyderabad demo coordinates only.
+      // These are not the restaurant or customer's actual locations.
+      const route = [
+        [17.4483, 78.3915],
+        [17.4465, 78.3950],
+        [17.4438, 78.3985],
+        [17.4415, 78.4025],
+        [17.4390, 78.4060],
+        [17.4365, 78.4100]
+      ];
+
+      const map = L.map("foodflow-map", {
+        scrollWheelZoom: false
+      }).setView(route[0], 15);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+      const routeLine = L.polyline(route, {
+        color: "#38bdf8",
+        weight: 5,
+        opacity: 0.9,
+        dashArray: "8 8"
+      }).addTo(map);
+
+      L.circleMarker(route[0], {
+        radius: 9,
+        color: "#c2410c",
+        fillColor: "#f97316",
+        fillOpacity: 1,
+        weight: 3
+      }).addTo(map).bindPopup("Demo restaurant");
+
+      L.circleMarker(route[route.length - 1], {
+        radius: 9,
+        color: "#15803d",
+        fillColor: "#22c55e",
+        fillOpacity: 1,
+        weight: 3
+      }).addTo(map).bindPopup("Demo delivery destination");
+
+      const riderIcon = L.divIcon({
+        className: "",
+        html: '<div style="width:34px;height:34px;border-radius:50%;background:#0284c7;border:3px solid white;box-shadow:0 2px 12px #0006;display:flex;align-items:center;justify-content:center;font-size:18px">🛵</div>',
+        iconSize: [34, 34],
+        iconAnchor: [17, 17]
+      });
+
+      const rider = L.marker(route[0], {
+        icon: riderIcon,
+        zIndexOffset: 1000
+      }).addTo(map).bindPopup("Delivery rider · simulated movement");
+
+      map.fitBounds(routeLine.getBounds(), { padding: [25, 25] });
+
+      // Move the rider repeatedly along the demonstration route.
+      let segment = 0;
+      let progress = 0;
+      const speed = 0.025;
+
+      window.setInterval(function () {
+        progress += speed;
+
+        if (progress >= 1) {
+          progress = 0;
+          segment = (segment + 1) % (route.length - 1);
+        }
+
+        const start = route[segment];
+        const end = route[segment + 1];
+
+        const lat = start[0] + (end[0] - start[0]) * progress;
+        const lng = start[1] + (end[1] - start[1]) * progress;
+
+        rider.setLatLng([lat, lng]);
+      }, 350);
+
+      window.setTimeout(function () {
+        map.invalidateSize();
+      }, 300);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodFlow | Operations Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                FF
+            </div>
+
+            <div class="brand-text">
+                <strong>FoodFlow</strong>
+                <span>Ordering Operations</span>
+            </div>
+
+        </div>
+
+
+        <div class="nav-label">
+            Workspace
+        </div>
+
+
+        <a href="/" class="nav-link active">
+
+            <span class="nav-icon">⌂</span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <a href="#orders" class="nav-link">
+
+            <span class="nav-icon">▤</span>
+
+            <span>
+                Orders
+            </span>
+
+        </a>
+
+        <a href="/admin/analytics" class="nav-link"><span class="nav-icon">▥</span><span>Analytics</span></a>
+        <a href="/admin/customers" class="nav-link"><span class="nav-icon">♙</span><span>Customers</span></a>
+        <a href="/admin/restaurants" class="nav-link"><span class="nav-icon">⌂</span><span>Restaurants</span></a>
+        <a href="/admin/payments" class="nav-link"><span class="nav-icon">₹</span><span>Payments</span></a>
+        <a href="/admin/deliveries" class="nav-link"><span class="nav-icon">↗</span><span>Deliveries</span></a>
+        <a href="/admin/accounts" class="nav-link"><span class="nav-icon">＋</span><span>Staff access</span></a>
+        <a href="/admin/audit" class="nav-link"><span class="nav-icon">◷</span><span>Audit log</span></a>
+
+
+        <a href="/admin/integrity" class="nav-link">
+
+            <span class="nav-icon">✓</span>
+
+            <span>
+                Integrity Monitor
+            </span>
+
+        </a>
+
+
+        <div class="nav-label">
+            System
+        </div>
+
+
+        <a href="/admin/health" class="nav-link">
+
+            <span class="nav-icon">◉</span>
+
+            <span>
+                Database Health
+            </span>
+
+        </a>
+
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span>
+                    MongoDB Atlas connected
+                </span>
+
+            </div>
+
+            <a class="logout-link" href="/logout">Sign out <span aria-hidden="true">↗</span></a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <main class="main">
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div class="page-title">
+
+                <h1>
+                    Food Ordering Operations
+                </h1>
+
+                <p>
+                    Real-time view of orders, restaurants and delivery activity.
+                </p>
+
+            </div>
+
+
+            <div class="connection">
+
+                <span class="status-dot"></span>
+
+                MongoDB Atlas
+                <strong>ONLINE</strong>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             KPI CARDS
+             ================================================= -->
+
+        <section class="kpi-grid">
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Total Orders
+                </div>
+
+                <div
+                    class="kpi-value counter"
+                    data-value="{{ total_orders }}"
+                >
+                    0
+                </div>
+
+                <div class="kpi-sub">
+                    Orders stored in Atlas
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Customers
+                </div>
+
+                <div
+                    class="kpi-value counter"
+                    data-value="{{ total_customers }}"
+                >
+                    0
+                </div>
+
+                <div class="kpi-sub">
+                    Unique customers
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Restaurants
+                </div>
+
+                <div
+                    class="kpi-value counter"
+                    data-value="{{ total_restaurants }}"
+                >
+                    0
+                </div>
+
+                <div class="kpi-sub">
+                    Restaurants represented
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Order Value
+                </div>
+
+                <div class="kpi-value">
+
+                    ₹<span
+                        class="counter"
+                        data-value="{{ total_order_value }}"
+                    >0</span>
+
+                </div>
+
+                <div class="kpi-sub">
+                    Total value of stored orders
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             STATUS + OPERATIONS
+             ================================================= -->
+
+        <section class="content-grid">
+
+
+            <!-- ORDER STATUS -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <div class="panel-title">
+                            Order Status
+                        </div>
+
+                        <div class="panel-subtitle">
+                            Current distribution of orders
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="status-list">
+
+
+                    <div class="status-row">
+
+                        <div class="status-name">
+                            Delivered
+                        </div>
+
+                        <div class="status-bar">
+
+                            <div
+                                class="status-fill"
+                                style="width: {% if total_orders > 0 %}{{ (status_counts['Delivered'] / total_orders * 100)|round }}%{% else %}0%{% endif %};"
+                            ></div>
+
+                        </div>
+
+                        <div class="status-number">
+                            {{ status_counts['Delivered'] }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="status-row">
+
+                        <div class="status-name">
+                            Out for Delivery
+                        </div>
+
+                        <div class="status-bar">
+
+                            <div
+                                class="status-fill"
+                                style="width: {% if total_orders > 0 %}{{ (status_counts['Out for Delivery'] / total_orders * 100)|round }}%{% else %}0%{% endif %};"
+                            ></div>
+
+                        </div>
+
+                        <div class="status-number">
+                            {{ status_counts['Out for Delivery'] }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="status-row">
+
+                        <div class="status-name">
+                            Preparing
+                        </div>
+
+                        <div class="status-bar">
+
+                            <div
+                                class="status-fill"
+                                style="width: {% if total_orders > 0 %}{{ (status_counts['Preparing'] / total_orders * 100)|round }}%{% else %}0%{% endif %};"
+                            ></div>
+
+                        </div>
+
+                        <div class="status-number">
+                            {{ status_counts['Preparing'] }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="status-row">
+
+                        <div class="status-name">
+                            Placed
+                        </div>
+
+                        <div class="status-bar">
+
+                            <div
+                                class="status-fill"
+                                style="width: {% if total_orders > 0 %}{{ (status_counts['Placed'] / total_orders * 100)|round }}%{% else %}0%{% endif %};"
+                            ></div>
+
+                        </div>
+
+                        <div class="status-number">
+                            {{ status_counts['Placed'] }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- OPERATIONS -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <div class="panel-title">
+                            Operations
+                        </div>
+
+                        <div class="panel-subtitle">
+                            Payment and delivery overview
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="quick-grid">
+
+
+                    <div class="quick-card">
+
+                        <div class="quick-label">
+                            Paid
+                        </div>
+
+                        <div class="quick-value">
+                            {{ payment_counts['Paid'] }}
+                        </div>
+
+                        <div class="quick-indicator">
+                            ● Payment confirmed
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-card">
+
+                        <div class="quick-label">
+                            Pending
+                        </div>
+
+                        <div class="quick-value">
+                            {{ payment_counts['Pending'] }}
+                        </div>
+
+                        <div class="quick-indicator">
+                            ● Requires attention
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-card">
+
+                        <div class="quick-label">
+                            Delivered
+                        </div>
+
+                        <div class="quick-value">
+                            {{ delivery_counts['Delivered'] }}
+                        </div>
+
+                        <div class="quick-indicator">
+                            ● Completed
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-card">
+
+                        <div class="quick-label">
+                            In Transit
+                        </div>
+
+                        <div class="quick-value">
+                            {{ delivery_counts['Out for Delivery'] }}
+                        </div>
+
+                        <div class="quick-indicator">
+                            ● On the way
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             ORDERS
+             ================================================= -->
+
+        <section class="panel semantic-panel" id="smart-food-search">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">Smart Food Search</div>
+                    <div class="panel-subtitle">Describe what you feel like eating to find matching menu items.</div>
+                </div>
+                <span class="semantic-powered">PGVECTOR · SEMANTIC</span>
+            </div>
+            <form id="semanticSearchForm" class="semantic-toolbar">
+                <label class="search-box" for="semanticQuery">
+                    <input id="semanticQuery" name="q" type="search" maxlength="300" placeholder="Try: spicy chicken food" autocomplete="off">
+                </label>
+                <button class="refresh-btn" id="semanticSearchButton" type="submit">Search</button>
+            </form>
+            <div id="semanticSearchStatus" class="semantic-status" role="status" aria-live="polite">Search the PostgreSQL menu using natural language.</div>
+            <div id="semanticSearchResults" class="semantic-results" aria-live="polite"></div>
+        </section>
+
+        <section
+            class="panel orders-panel"
+            id="orders"
+        >
+
+            <div class="panel-header">
+
+                <div>
+
+                    <div class="panel-title">
+                        Recent Orders
+                    </div>
+
+                    <div class="panel-subtitle">
+                        Live records retrieved from MongoDB Atlas
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOOLBAR -->
+
+            <div class="toolbar">
+
+
+                <div class="search-box">
+
+                    <input
+                        type="text"
+                        id="orderSearch"
+                        placeholder="Search customer, restaurant or order ID..."
+                    >
+
+                </div>
+
+
+                <select
+                    id="statusFilter"
+                    class="filter-select"
+                >
+
+                    <option value="all">
+                        All statuses
+                    </option>
+
+                    <option value="Delivered">
+                        Delivered
+                    </option>
+
+                    <option value="Preparing">
+                        Preparing
+                    </option>
+
+                    <option value="Out for Delivery">
+                        Out for Delivery
+                    </option>
+
+                    <option value="Placed">
+                        Placed
+                    </option>
+
+                </select>
+
+
+                <button
+                    class="refresh-btn"
+                    onclick="refreshDashboard()"
+                >
+                    ↻ Refresh
+                </button>
+
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <div class="table-wrap">
+
+                <table class="orders-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Order
+                            </th>
+
+                            <th>
+                                Customer
+                            </th>
+
+                            <th>
+                                Restaurant
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="ordersTableBody">
+
+
+                        {% for order in orders %}
+
+                        {% set status = order.get('order_status', order.get('status', 'Placed')) %}
+
+
+                        <tr
+                            data-status="{{ status }}"
+                            data-search="
+                                {{ order.get('order_id', '') }}
+                                {{ order.get('customer', {}).get('name', '') }}
+                                {{ order.get('restaurant', {}).get('name', '') }}
+                            "
+                        >
+
+                            <td class="order-id">
+
+                                #{{ order.get('order_id', '') }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ order.get('customer', {}).get('name', 'Unknown') }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ order.get('restaurant', {}).get('name', 'Unknown') }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if status == 'Delivered' %}
+
+                                <span class="badge badge-delivered">
+                                    Delivered
+                                </span>
+
+                                {% elif status == 'Preparing' %}
+
+                                <span class="badge badge-preparing">
+                                    Preparing
+                                </span>
+
+                                {% elif status == 'Out for Delivery' %}
+
+                                <span class="badge badge-out">
+                                    Out for Delivery
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge badge-placed">
+                                    {{ status }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td class="amount">
+
+                                ₹{{ "%.2f"|format(order.get('total_amount', 0)|float) }}
+
+                            </td>
+
+                        </tr>
+
+
+                        {% else %}
+
+                        <tr>
+
+                            <td
+                                colspan="5"
+                                class="empty-state"
+                            >
+                                No orders found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+     ========================================================= -->
+
+<div
+    id="toast"
+    class="toast"
+>
+    Dashboard refreshed
+</div>
+
+
+<script
+    src="{{ url_for('static', filename='js/app.js') }}"
+></script>
+
+</body>
+</html>

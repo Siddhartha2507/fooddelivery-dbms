@@ -1,0 +1,393 @@
+/* FOODFLOW — Premium UI Animations */
+/* Additive styles only; preserves existing layout and functionality */
+
+@keyframes ffFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ffSoftGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(56, 189, 248, 0.12);
+    }
+}
+
+@keyframes ffShimmer {
+    from {
+        background-position: 180% 0;
+    }
+    to {
+        background-position: -180% 0;
+    }
+}
+
+/* Smooth interactions */
+a,
+button,
+input,
+select,
+textarea {
+    transition:
+        color 220ms ease,
+        background-color 220ms ease,
+        border-color 220ms ease,
+        box-shadow 220ms ease,
+        transform 220ms ease;
+}
+
+/* Page sections enter gently */
+body:has(.customer-home) .customer-home > section,
+body:has(.customer-home) .customer-home > header {
+    animation: ffFadeUp 650ms ease both;
+}
+
+/* Cards lift slightly on hover */
+.restaurant-card,
+.food-card,
+.menu-card,
+.order-card,
+.restaurant-item,
+.food-item {
+    transition:
+        transform 240ms ease,
+        box-shadow 240ms ease,
+        border-color 240ms ease;
+    will-change: transform;
+}
+
+.restaurant-card:hover,
+.food-card:hover,
+.menu-card:hover,
+.order-card:hover,
+.restaurant-item:hover,
+.food-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 32px rgba(2, 8, 23, 0.18);
+}
+
+/* Interactive fields */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
+/* Buttons feel responsive */
+button:hover,
+a.track:hover {
+    transform: translateY(-2px);
+}
+
+button:active,
+a.track:active {
+    transform: scale(0.98);
+}
+
+/* Accessible motion settings */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* FOODFLOW: Improve customer home text visibility */
+.customer-home h1,
+.customer-home h2,
+.customer-home h3,
+.customer-home h4,
+.customer-home p,
+.customer-home label,
+.customer-home .restaurant-name,
+.customer-home .item-name,
+.customer-home .food-name,
+.customer-home .order-title {
+    color: #f8fafc !important;
+}
+
+.customer-home input,
+.customer-home select,
+.customer-home textarea {
+    color: #f8fafc !important;
+}
+
+.customer-home input::placeholder,
+.customer-home textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Fix Customer Home text visibility */
+.customer-home .section-header h2,
+.customer-home .section-header p,
+.customer-home .view-all,
+.customer-home .order-card,
+.customer-home .order-card h1,
+.customer-home .order-card h2,
+.customer-home .order-card h3,
+.customer-home .order-card p,
+.customer-home .order-card span,
+.customer-home .order-card a {
+    color: #f8fafc !important;
+}
+/* FINAL FIX: Customer Home text readability */
+.foodflow-page .section-header h2,
+.foodflow-page .section-header p,
+.foodflow-page .section-header a,
+.foodflow-page .order-card *,
+.foodflow-page .restaurant-card *,
+.foodflow-page .food-card *,
+.foodflow-page .hero p,
+.foodflow-page .hero h1,
+.foodflow-page label,
+.foodflow-page .section h2 {
+    color: #f8fafc !important;
+}
+
+/* Keep gradient hero text visible */
+.foodflow-page .hero h1 span {
+    background: linear-gradient(90deg, #60a5fa, #22d3ee) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* ==========================================
+   FOODFLOW MOTION UPGRADE
+   Premium entrance, glow and hover effects
+   ========================================== */
+
+@keyframes ffPageReveal {
+    from {
+        opacity: 0;
+        transform: translateY(26px) scale(0.99);
+        filter: blur(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes ffCardReveal {
+    from {
+        opacity: 0;
+        transform: translateY(32px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes ffGradientFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes ffAccentPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+    }
+    50% {
+        box-shadow: 0 0 26px rgba(56, 189, 248, 0.22);
+    }
+}
+
+@keyframes ffFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes ffShineSweep {
+    from { left: -80%; }
+    to { left: 140%; }
+}
+
+/* Stronger entrance when pages load */
+.customer-main {
+    animation: ffPageReveal 650ms cubic-bezier(.2,.7,.2,1) both;
+}
+
+.page-heading {
+    animation: ffPageReveal 700ms ease both;
+}
+
+/* Restaurant cards enter one after another */
+.restaurant-grid > .restaurant-card {
+    opacity: 0;
+    animation: ffCardReveal 650ms cubic-bezier(.2,.7,.2,1) forwards;
+}
+
+.restaurant-grid > .restaurant-card:nth-child(1) { animation-delay: 80ms; }
+.restaurant-grid > .restaurant-card:nth-child(2) { animation-delay: 170ms; }
+.restaurant-grid > .restaurant-card:nth-child(3) { animation-delay: 260ms; }
+.restaurant-grid > .restaurant-card:nth-child(4) { animation-delay: 350ms; }
+.restaurant-grid > .restaurant-card:nth-child(5) { animation-delay: 440ms; }
+.restaurant-grid > .restaurant-card:nth-child(6) { animation-delay: 530ms; }
+.restaurant-grid > .restaurant-card:nth-child(n+7) { animation-delay: 600ms; }
+
+/* Premium card interaction */
+.restaurant-card,
+.order-card,
+.food-card,
+.menu-card,
+.cart-panel,
+.menu-edit-row {
+    position: relative;
+    transition:
+        transform 320ms cubic-bezier(.2,.7,.2,1),
+        box-shadow 320ms ease,
+        border-color 320ms ease;
+}
+
+.restaurant-card,
+.food-card,
+.menu-card {
+    overflow: hidden;
+}
+
+.restaurant-card::after,
+.food-card::after,
+.menu-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 45%;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(
+        110deg,
+        transparent,
+        rgba(255,255,255,.14),
+        transparent
+    );
+}
+
+.restaurant-card:hover::after,
+.food-card:hover::after,
+.menu-card:hover::after {
+    animation: ffShineSweep 750ms ease;
+}
+
+.restaurant-card:hover,
+.food-card:hover,
+.menu-card:hover,
+.order-card:hover {
+    transform: translateY(-8px) scale(1.015);
+    box-shadow:
+        0 18px 40px rgba(2, 8, 23, .18),
+        0 0 0 1px rgba(56, 189, 248, .22);
+    border-color: rgba(56, 189, 248, .55);
+}
+
+/* Restaurant letter badge */
+.restaurant-mark {
+    transition: transform 350ms ease, box-shadow 350ms ease;
+}
+
+.restaurant-card:hover .restaurant-mark {
+    transform: rotate(-8deg) scale(1.12);
+    box-shadow: 0 0 24px rgba(56, 189, 248, .28);
+}
+
+/* Menu management panels */
+.cart-panel {
+    animation: ffPageReveal 650ms ease both;
+}
+
+.menu-management-list > .menu-edit-row {
+    animation: ffCardReveal 550ms ease both;
+}
+
+.menu-management-list > .menu-edit-row:nth-child(1) { animation-delay: 80ms; }
+.menu-management-list > .menu-edit-row:nth-child(2) { animation-delay: 150ms; }
+.menu-management-list > .menu-edit-row:nth-child(3) { animation-delay: 220ms; }
+.menu-management-list > .menu-edit-row:nth-child(4) { animation-delay: 290ms; }
+.menu-management-list > .menu-edit-row:nth-child(n+5) { animation-delay: 350ms; }
+
+.menu-edit-row:hover {
+    transform: translateX(5px);
+    box-shadow: 0 10px 26px rgba(2, 8, 23, .12);
+}
+
+/* Animated gradient accent on headings */
+.page-heading {
+    background: linear-gradient(
+        100deg,
+        #2563eb,
+        #06b6d4,
+        #7c3aed,
+        #2563eb
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation:
+        ffPageReveal 700ms ease both,
+        ffGradientFlow 7s ease-in-out infinite;
+}
+
+/* More noticeable, smooth button feedback */
+button,
+.primary-link,
+.small-primary,
+.card-link {
+    transition:
+        transform 240ms ease,
+        box-shadow 240ms ease,
+        filter 240ms ease;
+}
+
+button:hover,
+.primary-link:hover,
+.small-primary:hover,
+.card-link:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, .2);
+}
+
+button:active,
+.primary-link:active,
+.small-primary:active,
+.card-link:active {
+    transform: scale(.97);
+}
+
+/* Accessibility: respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .customer-main,
+    .page-heading,
+    .restaurant-grid > .restaurant-card,
+    .cart-panel,
+    .menu-management-list > .menu-edit-row {
+        animation: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+    }
+
+    .restaurant-card:hover,
+    .food-card:hover,
+    .menu-card:hover,
+    .order-card:hover,
+    .menu-edit-row:hover {
+        transform: none !important;
+    }
+}

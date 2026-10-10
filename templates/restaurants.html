@@ -1,0 +1,167 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Restaurants | FoodFlow</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/foodflow-animations.css') }}">
+
+    <style>
+        body {
+            background: #020617 !important;
+        }
+
+        .restaurants-video-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .restaurants-video-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(2, 6, 23, .70),
+                    rgba(2, 6, 23, .86)
+                ),
+                radial-gradient(
+                    ellipse at 50% 0%,
+                    rgba(8, 145, 178, .18),
+                    transparent 65%
+                );
+        }
+
+        .restaurants-content {
+            position: relative;
+            z-index: 1;
+            min-height: 75vh;
+            padding: 34px 24px 60px;
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        .restaurants-content .page-heading {
+            color: #f8fafc;
+            -webkit-text-fill-color: #f8fafc;
+            margin-bottom: 12px;
+        }
+
+        .restaurants-intro {
+            color: #cbd5e1;
+            margin-bottom: 32px;
+        }
+
+        .restaurants-content .restaurant-card {
+            background: rgba(15, 23, 42, .78);
+            border: 1px solid rgba(148, 163, 184, .25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #f8fafc;
+            border-radius: 18px;
+        }
+
+        .restaurants-content .restaurant-card h3,
+        .restaurants-content .restaurant-card p,
+        .restaurants-content .restaurant-card .muted {
+            color: #f8fafc;
+        }
+
+        .restaurants-content .restaurant-card p {
+            color: #cbd5e1;
+        }
+
+        .restaurants-content .restaurant-card .card-link {
+            display: inline-block;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .restaurants-content {
+                padding: 24px 16px 44px;
+            }
+
+            .restaurants-video-bg {
+                object-position: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .restaurants-video-bg {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <video
+        class="restaurants-video-bg"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-hidden="true"
+        
+    >
+        <source
+            src="{{ url_for('static', filename='videos/foodflow_restaurants.mp4') }}"
+            type="video/mp4">
+    </video>
+
+    <div class="restaurants-video-overlay" aria-hidden="true"></div>
+
+    {% include "_app_nav.html" %}
+
+    <main class="customer-main restaurants-content">
+        {% include "_flashes.html" %}
+
+        <span class="login-eyebrow">DISCOVER YOUR COMMUNITY</span>
+
+        <h1 class="page-heading">Restaurants</h1>
+
+        <p class="restaurants-intro">
+            Discover your next favourite meal.
+        </p>
+
+        <div class="restaurant-grid">
+            {% for rid, name, location, available_count in restaurants %}
+                <article class="restaurant-card">
+                    <span class="restaurant-mark">{{ name[:1]|upper }}</span>
+
+                    <h3>{{ name }}</h3>
+
+                    <p>{{ location }}</p>
+
+                    <span class="muted">
+                        {{ available_count }} available items
+                    </span>
+
+                    <a
+                        class="card-link"
+                        href="/customer/menu?restaurant_id={{ rid }}">
+                        Explore menu →
+                    </a>
+                </article>
+            {% else %}
+                <div class="empty-state">No restaurants found.</div>
+            {% endfor %}
+        </div>
+    </main>
+
+    {% include "_app_footer.html" %}
+
+    <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

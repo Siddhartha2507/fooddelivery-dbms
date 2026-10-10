@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="csrf-token" content="{{ csrf_token }}"><title>Razorpay TEST MODE | FOODFLOW</title><link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}"><script src="https://checkout.razorpay.com/v1/checkout.js"></script></head>
+<body>{% include "_app_nav.html" %}<main class="customer-main"><section class="welcome-card"><span class="login-eyebrow">RAZORPAY TEST/SANDBOX MODE</span><h1>Complete test payment</h1><p>Order #{{ order_id }} · ₹{{ '%.2f'|format(amount) }}. No real money will be processed. Test credentials only.</p><button id="payButton" class="primary-link" type="button">Open test checkout</button><p id="paymentMessage" role="status" class="muted"></p></section></main>
+<script>
+const csrf = document.querySelector('meta[name="csrf-token"]').content;
+let failureReported = false;
+async function reportFailure(message) {
+  if (failureReported) return;
+  failureReported = true;
+  document.getElementById("paymentMessage").textContent = message;
+  await fetch("/api/payment/failure", {method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":csrf},body:JSON.stringify({razorpay_order_id:{{ gateway_order|tojson }}})});
+}
+const options = {
+  key: {{ public_key|tojson }}, amount: {{ amount_paise }}, currency: "INR",
+  name: "FOODFLOW · TEST", description: "Test payment for order #{{ order_id }}",
+  order_id: {{ gateway_order|tojson }},
+  modal: {ondismiss: () => reportFailure("Test checkout was closed. No payment was confirmed.")},
+  prefill: {name: {{ customer[0]|tojson }}, email: {{ customer[1]|tojson }}, contact: {{ customer[2]|tojson }}},
+  theme: {color: "#2563EB"},
+  handler: async response => {
+    const result = await fetch("/api/payment/verify", {method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":csrf},body:JSON.stringify({...response,foodflow_order_id:{{ order_id }}})});
+    const data = await result.json();
+    if (data.success) location.href = "/customer/orders/{{ order_id }}";
+    else document.getElementById("paymentMessage").textContent = data.error || "Payment verification failed.";
+  }
+};
+const checkout = new Razorpay(options);
+checkout.on("payment.failed", async () => {
+  await reportFailure("Test payment failed or was cancelled. No payment was confirmed.");
+});
+document.getElementById("payButton").addEventListener("click", () => checkout.open());
+</script>{% include "_app_footer.html" %}<script defer src="{{ url_for('static', filename='js/app.js') }}"></script></body></html>

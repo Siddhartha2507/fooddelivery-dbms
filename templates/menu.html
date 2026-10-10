@@ -1,0 +1,470 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <title>Menu | FoodFlow</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/foodflow-animations.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #020617 !important;
+            color: #f8fafc;
+            isolation: isolate;
+        }
+
+        /* BRIGHT FOOD VIDEO BACKGROUND */
+        .menu-video-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .menu-video-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: linear-gradient(
+                180deg,
+                rgba(2, 6, 23, .60),
+                rgba(2, 6, 23, .82)
+            );
+        }
+
+        /* PAGE LAYOUT */
+        .menu-content {
+            position: relative;
+            min-height: 78vh;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 38px 24px 75px;
+        }
+
+        .menu-content .login-eyebrow {
+            display: inline-block;
+            padding: 8px 13px;
+            border-radius: 30px;
+            background: rgba(8, 145, 178, .18);
+            border: 1px solid rgba(34, 211, 238, .35);
+            color: #67e8f9;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .menu-content .page-heading {
+            margin: 16px 0 30px;
+            color: #f8fafc;
+            font-size: clamp(32px, 5vw, 52px);
+            line-height: 1.12;
+            letter-spacing: -1.5px;
+            animation: menuHeadingReveal .7s ease both;
+        }
+
+        @keyframes menuHeadingReveal {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RESTAURANT SELECTION */
+        .menu-content .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .menu-content .restaurant-card {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            min-height: 190px;
+            padding: 25px;
+            border-radius: 22px;
+            background: rgba(15, 23, 42, .84);
+            border: 1px solid rgba(148, 163, 184, .25);
+            color: #f8fafc;
+            text-decoration: none;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, .16);
+            transition:
+                transform .35s ease,
+                border-color .35s ease,
+                box-shadow .35s ease;
+        }
+
+        .menu-content .restaurant-card::before {
+            content: "🍽️";
+            display: block;
+            margin-bottom: 15px;
+            font-size: 36px;
+            transition: transform .35s ease;
+        }
+
+        .menu-content .restaurant-card:hover {
+            transform: translateY(-9px) scale(1.015);
+            border-color: rgba(34, 211, 238, .7);
+            box-shadow: 0 25px 55px rgba(0, 0, 0, .3);
+        }
+
+        .menu-content .restaurant-card:hover::before {
+            transform: rotate(-8deg) scale(1.12);
+        }
+
+        .menu-content .restaurant-card h3 {
+            margin: 0 0 9px;
+            color: #f8fafc;
+            font-size: 21px;
+        }
+
+        .menu-content .restaurant-card p {
+            margin: 0 0 18px;
+            color: #cbd5e1;
+        }
+
+        .menu-content .restaurant-card .card-link {
+            color: #67e8f9;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        /* FOOD MENU GRID */
+        .menu-content .food-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .menu-content .food-card {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+            padding: 24px;
+            border-radius: 22px;
+            background: rgba(15, 23, 42, .86);
+            border: 1px solid rgba(148, 163, 184, .24);
+            color: #f8fafc;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, .17);
+            animation: menuCardReveal .65s cubic-bezier(.2, .7, .2, 1) both;
+            transition:
+                transform .35s ease,
+                border-color .35s ease,
+                box-shadow .35s ease;
+        }
+
+        .menu-content .food-card:nth-child(2) { animation-delay: 80ms; }
+        .menu-content .food-card:nth-child(3) { animation-delay: 160ms; }
+        .menu-content .food-card:nth-child(4) { animation-delay: 240ms; }
+        .menu-content .food-card:nth-child(5) { animation-delay: 320ms; }
+        .menu-content .food-card:nth-child(6) { animation-delay: 400ms; }
+        .menu-content .food-card:nth-child(n+7) { animation-delay: 450ms; }
+
+        @keyframes menuCardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(28px) scale(.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .menu-content .food-card::before {
+            content: "🍴";
+            display: grid;
+            place-items: center;
+            width: 62px;
+            height: 62px;
+            margin-bottom: 18px;
+            border-radius: 19px;
+            background: linear-gradient(
+                135deg,
+                rgba(37, 99, 235, .30),
+                rgba(6, 182, 212, .23)
+            );
+            border: 1px solid rgba(103, 232, 249, .2);
+            font-size: 32px;
+            transition: transform .35s ease;
+        }
+
+        .menu-content .food-card:hover {
+            transform: translateY(-9px) scale(1.02);
+            border-color: rgba(34, 211, 238, .65);
+            box-shadow:
+                0 25px 55px rgba(0, 0, 0, .3),
+                0 0 22px rgba(34, 211, 238, .08);
+        }
+
+        .menu-content .food-card:hover::before {
+            transform: rotate(-8deg) scale(1.1);
+        }
+
+        .menu-content .food-kicker {
+            display: inline-block;
+            align-self: flex-start;
+            margin-bottom: 12px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, .13);
+            color: #86efac;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .menu-content .food-kicker:has(+ h3) {
+            position: relative;
+        }
+
+        .menu-content .food-card h3 {
+            margin: 0 0 24px;
+            color: #f8fafc;
+            font-size: 21px;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        .menu-content .food-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 13px;
+            margin-top: auto;
+            padding-top: 17px;
+            border-top: 1px solid rgba(148, 163, 184, .18);
+        }
+
+        .menu-content .food-card-footer strong {
+            color: #f8fafc;
+            font-size: 23px;
+            font-weight: 900;
+        }
+
+        /* ADD TO CART BUTTON */
+        .menu-content .food-card .small-primary {
+            position: relative;
+            overflow: hidden;
+            min-height: 43px;
+            padding: 12px 17px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 7px 20px rgba(37, 99, 235, .22);
+            transition:
+                transform .25s ease,
+                box-shadow .25s ease,
+                filter .25s ease;
+        }
+
+        .menu-content .food-card .small-primary:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.04);
+            filter: brightness(1.15);
+            box-shadow: 0 12px 28px rgba(6, 182, 212, .3);
+        }
+
+        .menu-content .food-card .small-primary:active:not(:disabled) {
+            transform: scale(.96);
+        }
+
+        .menu-content .food-card .small-primary:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            background: #475569;
+            box-shadow: none;
+        }
+
+        /* EMPTY STATE */
+        .menu-content .empty-state {
+            padding: 35px 24px;
+            border: 1px dashed rgba(148, 163, 184, .4);
+            border-radius: 18px;
+            background: rgba(15, 23, 42, .8);
+            color: #e2e8f0;
+            text-align: center;
+        }
+
+        /* MOBILE */
+        @media (max-width: 900px) {
+            .menu-content .restaurant-grid,
+            .menu-content .food-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .menu-content {
+                padding: 28px 16px 50px;
+            }
+
+            .menu-content .restaurant-grid,
+            .menu-content .food-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-content .food-card {
+                min-height: 190px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .menu-content .page-heading,
+            .menu-content .food-card {
+                animation: none !important;
+            }
+
+            .menu-content .restaurant-card,
+            .menu-content .food-card,
+            .menu-content .food-card::before {
+                transition: none !important;
+            }
+
+            .menu-content .restaurant-card:hover,
+            .menu-content .food-card:hover {
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background video: uses the existing customer video -->
+    <video class="menu-video-bg"
+           autoplay
+           muted
+           loop
+           playsinline
+           preload="metadata"
+           aria-hidden="true">
+        <source
+            src="{{ url_for('static', filename='videos/foodflow_customer.mp4') }}"
+            type="video/mp4">
+    </video>
+
+    <div class="menu-video-overlay" aria-hidden="true"></div>
+
+    {% include "_app_nav.html" %}
+
+    <main class="customer-main menu-content">
+        {% include "_flashes.html" %}
+
+        <span class="login-eyebrow">FOODFLOW MENU</span>
+
+        <h1 class="page-heading">
+            {% if selected %}
+                {{ restaurants[0][1] }}
+            {% else %}
+                Choose a restaurant
+            {% endif %}
+        </h1>
+
+        {% if not selected %}
+
+            <!-- RESTAURANT SELECTION -->
+            <div class="restaurant-grid">
+                {% for rid, name, location in restaurants %}
+                    <a class="restaurant-card"
+                       href="/customer/menu?restaurant_id={{ rid }}">
+                        <h3>{{ name }}</h3>
+                        <p>📍 {{ location }}</p>
+                        <span class="card-link">Explore menu →</span>
+                    </a>
+                {% else %}
+                    <div class="empty-state">
+                        No restaurants are available right now.
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
+
+            <!-- MENU ITEMS -->
+            <div class="food-grid">
+                {% for item_id, name, price, available in items %}
+                    <article class="food-card">
+
+                        <span class="food-kicker">
+                            {% if available %}
+                                AVAILABLE
+                            {% else %}
+                                UNAVAILABLE
+                            {% endif %}
+                        </span>
+
+                        <h3>{{ name }}</h3>
+
+                        <div class="food-card-footer">
+                            <strong>₹{{ '%.2f'|format(price) }}</strong>
+
+                            {% if available %}
+                                <button
+                                    type="button"
+                                    class="small-primary"
+                                    data-add-item="{{ item_id }}">
+                                    + Add to cart
+                                </button>
+                            {% else %}
+                                <button
+                                    type="button"
+                                    class="small-primary"
+                                    disabled>
+                                    Unavailable
+                                </button>
+                            {% endif %}
+                        </div>
+
+                    </article>
+                {% else %}
+                    <div class="empty-state">
+                        No menu items found for this restaurant.
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    {% include "_app_footer.html" %}
+
+    <script defer
+            src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+
+# Secrets and environment configuration
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Local development files
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE and deployment-local files
+.vscode/
+.vercel/
+
+# Test and coverage files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Project backups and local artifacts
+.backup/
+frontend_backup_before_expo/
+FOODFLOW_UI.zip
+workflow_routes.py.cartfix.bak
+notepad
+templates/order_detail_backup.html

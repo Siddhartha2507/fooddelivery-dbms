@@ -1,0 +1,24 @@
+{% set role = session.get('role', '') %}
+{% if role == 'customer' %}
+  {% set home = '/customer' %}{% set label = 'CUSTOMER' %}
+  {% set links = [('Home','/customer'),('Restaurants','/customer/restaurants'),('Smart search','/customer/search'),('Cart','/customer/cart'),('Orders','/customer/orders'),('Profile','/customer/profile')] %}
+{% elif role == 'restaurant_owner' %}
+  {% set home = '/restaurant' %}{% set label = 'RESTAURANT' %}
+  {% set links = [('Dashboard','/restaurant'),('Orders','/restaurant/orders'),('Menu','/restaurant/menu'),('Analytics','/restaurant/analytics'),('Profile','/restaurant/profile')] %}
+{% elif role == 'delivery_person' %}
+  {% set home = '/delivery' %}{% set label = 'DELIVERY' %}
+  {% set links = [('Dashboard','/delivery'),('Active deliveries','/delivery/active'),('History','/delivery/history'),('Profile','/delivery/profile')] %}
+{% elif role == 'admin' %}
+  {% set home = '/admin' %}{% set label = 'ADMIN' %}
+  {% set links = [('Dashboard','/admin'),('Orders','/admin/orders'),('Restaurants','/admin/restaurants'),('Analytics','/admin/analytics'),('Integrity','/admin/integrity'),('System health','/admin/health'),('Audit log','/admin/audit')] %}
+{% else %}
+  {% set home = '/' %}{% set label = 'COMMUNITY DINING' %}{% set links = [] %}
+{% endif %}
+<header class="customer-header app-header">
+  <a class="customer-brand" href="{{ home }}" aria-label="FOODFLOW home"><span class="brand-icon">FF</span><span>FOODFLOW<small>{{ label }} WORKSPACE</small></span></a>
+  <button class="app-nav-toggle" type="button" aria-expanded="false" aria-controls="appNavigation" aria-label="Open navigation"><span></span><span></span><span></span></button>
+  <nav id="appNavigation" class="app-navigation" aria-label="Main navigation">
+    {% for link_label, link_url in links %}<a href="{{ link_url }}">{{ link_label }}{% if link_url == '/customer/cart' and cart_count %}<span class="nav-count">{{ cart_count }}</span>{% endif %}</a>{% endfor %}
+    <a class="app-logout" href="/logout"><span aria-hidden="true">↗</span> Sign out</a>
+  </nav>
+</header>

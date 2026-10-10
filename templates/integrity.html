@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        FoodFlow | Integrity Monitor
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="page">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                FF
+            </div>
+
+            <div class="brand-text">
+
+                <strong>
+                    FoodFlow
+                </strong>
+
+                <span>
+                    Ordering Operations
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="nav-label">
+            Workspace
+        </div>
+
+
+        <a
+            href="/"
+            class="nav-link"
+        >
+
+            <span class="nav-icon">
+                ⌂
+            </span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <a
+            href="/#orders"
+            class="nav-link"
+        >
+
+            <span class="nav-icon">
+                ▤
+            </span>
+
+            <span>
+                Orders
+            </span>
+
+        </a>
+
+
+        <a
+            href="/integrity"
+            class="nav-link active"
+        >
+
+            <span class="nav-icon">
+                ✓
+            </span>
+
+            <span>
+                Integrity Monitor
+            </span>
+
+        </a>
+
+
+        <div class="nav-label">
+            System
+        </div>
+
+
+        <a
+            href="/health"
+            target="_blank"
+            class="nav-link"
+        >
+
+            <span class="nav-icon">
+                ◉
+            </span>
+
+            <span>
+                Database Health
+            </span>
+
+        </a>
+
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span>
+                    MongoDB Atlas connected
+                </span>
+
+            </div>
+
+            <a class="logout-link" href="/logout">Sign out <span aria-hidden="true">↗</span></a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="main">
+
+
+        <header class="topbar">
+
+            <div class="page-title">
+
+                <h1>
+                    Database Integrity Monitor
+                </h1>
+
+                <p>
+                    Validation evidence from the implemented relational database.
+                </p>
+
+            </div>
+
+
+            <div class="connection">
+
+                <span class="status-dot"></span>
+
+                Integrity Status
+
+                <strong>
+                    VERIFIED
+                </strong>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             SCORE
+             ================================================= -->
+
+        <section class="integrity-hero">
+
+            <div class="integrity-score">
+
+
+                <div class="score-circle">
+
+                    <strong>
+                        {{ passed_tests }}/{{ total_tests }}
+                    </strong>
+
+                </div>
+
+
+                <div class="integrity-title">
+
+                    <h2>
+                        POSTGRESQL CONSTRAINT-TEST EVIDENCE
+                    </h2>
+
+                    <p>
+                        Recorded validation results for the relational schema. These are PostgreSQL constraint checks, not live MongoDB tests.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             TEST CARDS
+             ================================================= -->
+
+        <section class="test-grid">
+
+
+            {% for test in integrity_tests %}
+
+            <article class="test-card">
+
+
+                <div class="test-top">
+
+                    <span class="test-type">
+
+                        {{ test.type }}
+
+                    </span>
+
+
+                    <span class="pass-badge">
+
+                        ✓ {{ test.status }}
+
+                    </span>
+
+                </div>
+
+
+                <h3>
+
+                    {{ test.name }}
+
+                </h3>
+
+
+                <p>
+
+                    {{ test.description }}
+
+                </p>
+
+
+            </article>
+
+            {% endfor %}
+
+
+        </section>
+
+
+        <!-- =================================================
+             EXPLANATION
+             ================================================= -->
+
+        <section
+            class="panel"
+            style="margin-top: 18px;"
+        >
+
+            <div class="panel-header">
+
+                <div>
+
+                    <div class="panel-title">
+                        Why this matters
+                    </div>
+
+                    <div class="panel-subtitle">
+                        Database-level validation
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <p
+                style="
+                    color: #9ca5b5;
+                    font-size: 12px;
+                    line-height: 1.8;
+                    max-width: 900px;
+                "
+            >
+
+                The prototype demonstrates that invalid data is
+                prevented at the database layer using relational
+                constraints. Foreign keys protect relationships,
+                CHECK constraints validate values, and UNIQUE
+                constraints prevent duplicate customer information.
+
+            </p>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+</body>
+
+</html>
